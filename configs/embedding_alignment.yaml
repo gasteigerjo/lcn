@@ -1,0 +1,165 @@
+seml:
+  executable: 'embedding_alignment_seml.py'
+  name: 'emb_align'
+  output_dir: '~/logs'
+  project_root_dir: '..'
+
+slurm:
+  experiments_per_job: 1
+  sbatch_options:
+    mem: 32G
+    gres: 'gpu:1'
+    cpus-per-task: 5
+    time: '0-1:00'
+
+fixed:
+  ntrain: 20000
+  lr: 500.
+  niter: 300
+  lr_half_niter: 100
+  print_niter: 999999999
+  ninit: 2500
+  sinkhorn_reg: 0.05
+  data_dir: ./data
+  output_src: None
+  output_tgt: None
+  device: cuda
+
+  # Evaluate test performance
+  # test: True
+
+grid:
+  seed:
+    type: choice
+    options:
+      - 1111
+      - 42
+      - 1
+      - 2
+      - 3
+
+from_en:
+  fixed:
+    language_src: 'en'
+  grid:
+    language_tgt:
+      type: choice
+      options:
+        - 'es'
+        - 'fr'
+        - 'de'
+        - 'ru'
+
+  original:
+    fixed:
+      method: original
+      nystrom: None
+      sparse: None
+  full:
+    fixed:
+      method: full
+      nystrom: None
+      sparse: None
+  nystrom:
+    fixed:
+      method: nystrom
+      nystrom:
+        neighbor_method: sampling_kmeanspp
+        num_clusters: 200
+      sparse: None
+  multiscale:
+    fixed:
+      method: sparse
+      nystrom: None
+      sparse:
+        method: multiscale
+        neighbor_method: kmeans_hier
+        num_clusters: [10, 50]
+        num_hash_bands: 1
+        num_hashes_per_band: 1
+        multiscale_threshold: 0.05
+  sparse:
+    fixed:
+      method: sparse
+      nystrom: None
+      sparse:
+        method: lsh
+        neighbor_method: angular_lsh
+        num_clusters: 130
+        num_hash_bands: 16
+        num_hashes_per_band: 2
+  lcn:
+    fixed:
+      method: lcn
+      nystrom:
+        landmark_method: sampling_kmeanspp
+        num_clusters: 20
+      sparse:
+        method: lsh
+        neighbor_method: kmeans_hier
+        num_clusters: [10, 100]
+        num_hash_bands: 1
+        num_hashes_per_band: 1
+
+to_en:
+  fixed:
+    language_tgt: 'en'
+  grid:
+    language_src:
+      type: choice
+      options:
+        - 'es'
+        - 'fr'
+        - 'de'
+        - 'ru'
+
+  original:
+    fixed:
+      method: original
+      nystrom: None
+      sparse: None
+  full:
+    fixed:
+      method: full
+      nystrom: None
+      sparse: None
+  nystrom:
+    fixed:
+      method: nystrom
+      nystrom:
+        landmark_method: sampling_kmeanspp
+        num_clusters: 200
+      sparse: None
+  multiscale:
+    fixed:
+      method: sparse
+      nystrom: None
+      sparse:
+        method: multiscale
+        neighbor_method: kmeans_hier
+        num_clusters: [10, 50]
+        num_hash_bands: 1
+        num_hashes_per_band: 1
+        multiscale_threshold: 0.05
+  sparse:
+    fixed:
+      method: sparse
+      nystrom: None
+      sparse:
+        method: lsh
+        neighbor_method: angular_lsh
+        num_clusters: 130
+        num_hash_bands: 16
+        num_hashes_per_band: 2
+  lcn:
+    fixed:
+      method: lcn
+      nystrom:
+        landmark_method: sampling_kmeanspp
+        num_clusters: 20
+      sparse:
+        method: lsh
+        neighbor_method: kmeans_hier
+        num_clusters: [10, 100]
+        num_hash_bands: 1
+        num_hashes_per_band: 1
