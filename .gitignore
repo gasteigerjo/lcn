@@ -14,4 +14,4 @@ __pycache__
 # setuptools
 *.egg-info
 
-runs/
+logs/

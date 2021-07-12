@@ -32,6 +32,7 @@ You can install the repository using `pip install -e .`.
 ## Word embedding data
 You can obtain the word embeddings from the [fastText project page](https://fasttext.cc/) and the bilingual lexicons from the [MUSE project page](https://github.com/facebookresearch/MUSE). You can do this directly using the following bash code:
 ```bash
+mkdir data
 cd data
 
 # Download word embeddings
