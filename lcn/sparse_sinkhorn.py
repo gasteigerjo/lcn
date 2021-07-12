@@ -7,6 +7,9 @@ from lcn.utils import scatter, segment_coo
 # (silently exits in 1.8, "bad_variant_access" in 1.9, don't know why)
 @torch.jit.script
 def sparse_lse_uv(sim_mat, cost_idx1, cost_idx2, norms_batch_idx, vec, dim: int):
+    """
+    Just a helper function implementing the calculations inside the Sinkhorn loop.
+    """
     if dim == 1:
         sum_inner = scatter(
             sim_mat + vec[cost_idx1],
@@ -40,6 +43,31 @@ def arg_log_sparse_sinkhorn(
     sinkhorn_reg: torch.FloatTensor,
     niter: int = 50,
 ):
+    """
+    Optimal transport plan with entropy regularization
+    using a sparse approximation of the cost matrix.
+    Calculated in log space.
+
+    Arguments
+    ---------
+    costs:              Sparse values of the cost matrix
+    cost_batch_idx:     Batch indices of the sparse values
+    cost_idx1:          Left (row) indices of the sparse values,
+                        with batch-wise offsets for treating all values at once
+    cost_idx2:          Right (col) indices of the sparse values
+                        with batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    T_log:              Values in the transport plan at the sparse entries
+    u:                  Resulting left normalization
+    v:                  Resulting right normalization
+    """
     sim_scaled = -costs / sinkhorn_reg[cost_batch_idx]
 
     u = costs.new_zeros(num_points[0].sum())
@@ -56,7 +84,27 @@ def arg_log_sparse_sinkhorn(
 class LogSparseSinkhorn(torch.autograd.Function):
     """
     Wasserstein distance with entropy regularization
-    using a sparse cost matrix. Calculated in log space.
+    and a sparse approximation of cost matrix.
+    Calculated in log space.
+    Call via LogSparseSinkhorn.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    costs:              Sparse values of the cost matrix
+    cost_batch_idx:     Batch indices of the sparse values
+    cost_idx1:          Left (row) indices of the sparse values,
+                        with batch-wise offsets for treating all values at once
+    cost_idx2:          Right (col) indices of the sparse values
+                        with batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     @staticmethod
@@ -120,7 +168,29 @@ class LogSparseSinkhornBP(torch.autograd.Function):
     """
     Wasserstein distance with entropy regularization
     using the BP matrix for unbalanced distributions
-    and a sparse cost matrix. Calculated in log space.
+    and a sparse approximation of cost matrix.
+    Calculated in log space.
+    Call via LogSparseSinkhornBP.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    costs:              Sparse values of the cost matrix
+    cost_batch_idx:     Batch indices of the sparse values
+    cost_idx1:          Left (row) indices of the sparse values,
+                        with batch-wise offsets for treating all values at once
+    cost_idx2:          Right (col) indices of the sparse values
+                        with batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms1:             Concatenated norms of the left embeddings
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    norms2:             Concatenated norms of the right embeddings
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     # For some reason scripting this is broken in PyTorch>=1.8

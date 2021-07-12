@@ -4,7 +4,8 @@ import torch
 
 
 class Sinkhorn(torch.autograd.Function):
-    """Wasserstein distance with entropy regularization.
+    """
+    Wasserstein distance with entropy regularization.
     Irregular dimensions due to batching are padded according to num_points.
 
     See Cuturi 2013, Sinkhorn Distances - Lightspeed Computation of Optimal Transport
@@ -14,7 +15,21 @@ class Sinkhorn(torch.autograd.Function):
     Also inspired by Mocha.jl (https://github.com/pluskid/Mocha.jl/blob/master/src/layers/wasserstein-loss.jl)
     and the Python Optimal Transport library (https://github.com/rflamary/POT/blob/master/ot/bregman.py).
 
-    sinkhorn_reg = 1 / lambda presents a trade-off: Smaller values are closer to the true EMD but converge more slowly and are less stable
+    Call via Sinkhorn.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    cost_mat:           Padded cost matrix
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization. sinkhorn_reg presents a trade-off:
+                        Smaller values are closer to the true EMD but converge
+                        more slowly and are less stable. Regularization can furthermore
+                        be beneficial for downstream performance.
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     @staticmethod
@@ -87,10 +102,32 @@ class Sinkhorn(torch.autograd.Function):
 
 
 class LogSinkhorn(torch.autograd.Function):
-    """Wasserstein distance with entropy regularization, calculated in log space.
+    """
+    Wasserstein distance with entropy regularization, calculated in log space.
     Irregular dimensions due to batching are padded according to num_points.
+    Call via LogSinkhorn.apply(*args), without ctx argument.
 
-    sinkhorn_reg = 1 / lambda presents a trade-off: Smaller values are closer to the true EMD but converge more slowly and are less stable
+    log space implementation inspired by Peyré, SinkhornAutoDiff
+    (https://github.com/gpeyre/SinkhornAutoDiff/blob/master/sinkhorn_pointcloud.py)
+    and Daza, Approximating Wasserstein distances with PyTorch
+    (https://dfdazac.github.io/sinkhorn.html)
+    In our case mu = nu = 1.
+
+    Arguments
+    ---------
+    cost_mat:           Padded cost matrix
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization. sinkhorn_reg presents a trade-off:
+                        Smaller values are closer to the true EMD but converge
+                        more slowly and are less stable. Regularization can furthermore
+                        be beneficial for downstream performance.
+    niter:              Number of Sinkhorn iterations
+    offset_entropy:     Whether to offset the entropy (like in the LCN-paper),
+                        or not (like the original Sinkhorn by Cuturi)
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     @staticmethod
@@ -130,12 +167,26 @@ def arg_log_sinkhorn(
     sinkhorn_reg: torch.Tensor,
     niter: int = 50,
 ):
-    """Transport matrix according to Wasserstein distance with entropy regularization, calculated in log space.
+    """
+    Transport plan according to Wasserstein distance
+    with entropy regularization, calculated in log space.
     Irregular dimensions due to batching are padded according to num_points.
 
-    See Peyré, SinkhornAutoDiff (https://github.com/gpeyre/SinkhornAutoDiff/blob/master/sinkhorn_pointcloud.py)
-    and Daza, Approximating Wasserstein distances with PyTorch (https://dfdazac.github.io/sinkhorn.html)
-    In our case mu = nu = 1.
+    Arguments
+    ---------
+    cost_mat:           Padded cost matrix
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization. sinkhorn_reg presents a trade-off:
+                        Smaller values are closer to the true EMD but converge
+                        more slowly and are less stable. Regularization can furthermore
+                        be beneficial for downstream performance.
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    T_log:              Transport plan in log space
+    u:                  Resulting left normalization
+    v:                  Resulting right normalization
     """
     batch_size, max_points, _ = cost_mat.shape
 
@@ -190,10 +241,29 @@ def arg_log_sinkhorn2(
     sinkhorn_reg: torch.Tensor,
     niter: int = 50,
 ):
-    """Transport matrix according to Wasserstein distance with entropy regularization, calculated in log space.
+    """
+    Transport plan according to Wasserstein distance
+    with entropy regularization, calculated in log space.
     Irregular dimensions due to batching are padded according to num_points.
 
-    More stable than arg_log_sinkhorn due to repeated multiplication and division by sinkhorn_reg.
+    More stable than arg_log_sinkhorn due to repeated
+    multiplication and division by sinkhorn_reg.
+
+    Arguments
+    ---------
+    cost_mat:           Padded cost matrix
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization. sinkhorn_reg presents a trade-off:
+                        Smaller values are closer to the true EMD but converge
+                        more slowly and are less stable. Regularization can furthermore
+                        be beneficial for downstream performance.
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    T_log:              Transport plan in log space
+    u:                  Resulting left normalization
+    v:                  Resulting right normalization
     """
     batch_size, max_points, _ = cost_mat.shape
 

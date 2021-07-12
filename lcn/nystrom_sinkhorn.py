@@ -7,6 +7,9 @@ from lcn.utils import logsumexp_signed, logsumexp_signed_to_signed
 # (silently exits in 1.8, "bad_variant_access" in 1.9, don't know why)
 @torch.jit.script
 def nystrom_lse_uv(sim_1a, sim_a2, sign_a2, vec, dim: int):
+    """
+    Just a helper function implementing the calculations inside the Sinkhorn loop.
+    """
     if dim % 3 == 2:
         mat_inner1, sign_inner1 = logsumexp_signed_to_signed(
             sim_a2 + vec[:, None, :], sign_a2, dim=2
@@ -30,6 +33,34 @@ def arg_log_nystrom_sinkhorn(
     sinkhorn_reg: torch.FloatTensor,
     niter: int = 50,
 ):
+    """
+    Wasserstein distance with entropy regularization
+    using a low-rank Nyström approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
+    Calculated in log space.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    T1a_log:            Padded left matrix of the decomposed transport plan
+                        T = T1a @ Ta2 in log-space
+    Ta2_log:            Padded right matrix of the decomposed transport plan
+                        T = T1a @ Ta2 in log-space
+    u:                  Resulting left normalization
+    v:                  Resulting right normalization
+    """
     batch_size, max_points = cost_1a.shape[:2]
 
     sim_1a_scaled = -cost_1a / sinkhorn_reg[:, None, None]
@@ -50,7 +81,26 @@ class LogNystromSinkhorn(torch.autograd.Function):
     """
     Wasserstein distance with entropy regularization
     using a low-rank Nyström approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
     Calculated in log space.
+    Call via LogNystromSinkhorn.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     @staticmethod
@@ -101,7 +151,28 @@ class LogNystromSinkhornBP(torch.autograd.Function):
     Wasserstein distance with entropy regularization
     using the BP matrix for unbalanced distributions
     and a low-rank Nyström approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
     Calculated in log space.
+    Call via LogNystromSinkhornBP.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    norms1:             Padded norms of the left embeddings
+    norms2:             Padded norms of the right embeddings
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     # For some reason scripting this is broken in PyTorch>=1.8

@@ -24,6 +24,9 @@ def lcn_lse_uv(
     vec,
     dim: int,
 ):
+    """
+    Just a helper function implementing the calculations inside the Sinkhorn loop.
+    """
     if dim % 3 == 2:
         mat_inner1, sign_inner1 = logsumexp_signed_to_signed(
             sim_a2 + vec[:, None, :], sign_a2, dim=2
@@ -101,6 +104,54 @@ def arg_log_lcn_sinkhorn(
     sinkhorn_reg: torch.FloatTensor,
     niter: int = 50,
 ):
+    """
+    Optimal transport plan with entropy regularization
+    using an LCN approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
+    Calculated in log space.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    cost_exact:         Sparse exact values of the cost matrix
+    sim_approx_scaled:  Sparse values of the Nyström approximation,
+                        using the indices of cost_exact
+    sign_approx:        Sign of the sparse values of the Nyström approximation
+    corr_batch_idx:     Batch indices of the sparse correction values
+                        (cost_exact, sim_approx_scaled)
+    corr_idx1:          Left (row) indices of the sparse correction values,
+                        with batch-wise offsets for treating all values at once
+    corr_idx2:          Right (col) indices of the sparse correction values
+                        with batch-wise offsets
+    corr_idx1_nooffset: Left (row) indices of the sparse correction values,
+                        without batch-wise offsets
+    corr_idx2_nooffset: Right (col) indices of the sparse correction values
+                        without batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms1_idx:         Point indices of the left norm vectors, i.e. one per row
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    norms2_idx:         Point indices of the right norm vectors, i.e. one per col
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    T1a_log:            Padded left matrix of the decomposed transport plan
+                        T = T1a @ Ta2 in log-space
+    Ta2_log:            Padded right matrix of the decomposed transport plan
+                        T = T1a @ Ta2 in log-space
+    T_exact_log:        Exact values in the transport plan at the sparse corrections
+    T_approx_log:       Low-rank approximation values at the sparse corrections
+    u:                  Resulting left normalization
+    v:                  Resulting right normalization
+    """
     batch_size, max_points = cost_1a.shape[:2]
 
     sim_1a_scaled = -cost_1a / sinkhorn_reg[:, None, None]
@@ -169,7 +220,44 @@ class LogLCNSinkhorn(torch.autograd.Function):
     """
     Wasserstein distance with entropy regularization
     using an LCN approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
     Calculated in log space.
+    Call via LogLCNSinkhorn.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    cost_exact:         Sparse exact values of the cost matrix
+    sim_approx_scaled:  Sparse values of the Nyström approximation,
+                        using the indices of cost_exact
+    sign_approx:        Sign of the sparse values of the Nyström approximation
+    corr_batch_idx:     Batch indices of the sparse correction values
+                        (cost_exact, sim_approx_scaled)
+    corr_idx1:          Left (row) indices of the sparse correction values,
+                        with batch-wise offsets for treating all values at once
+    corr_idx2:          Right (col) indices of the sparse correction values
+                        with batch-wise offsets
+    corr_idx1_nooffset: Left (row) indices of the sparse correction values,
+                        without batch-wise offsets
+    corr_idx2_nooffset: Right (col) indices of the sparse correction values
+                        without batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms1_idx:         Point indices of the left norm vectors, i.e. one per row
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    norms2_idx:         Point indices of the right norm vectors, i.e. one per col
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     @staticmethod
@@ -298,7 +386,46 @@ class LogLCNSinkhornBP(torch.autograd.Function):
     Wasserstein distance with entropy regularization
     using the BP matrix for unbalanced distributions
     and an LCN approximation of the cost matrix.
+    Irregular dimensions due to batching are padded according to num_points.
     Calculated in log space.
+    Call via LogLCNSinkhornBP.apply(*args), without ctx argument.
+
+    Arguments
+    ---------
+    cost_1a:            Padded left part of the Nyström approximation C = U @ V,
+                        as a cost in log-space, i.e. U = exp(-cost_1a / sinkhorn_reg)
+    sim_a2_scaled:      Padded right part of the Nyström approximation,
+                        as a similarity (-cost) in log-space,
+                        already divided by the regularization ("scaled")
+    sign_a2:            Padded sign of the right part of the Nyström approximation,
+                        i.e. V = sign_a2 * exp(sim_a2_scaled)
+    cost_exact:         Sparse exact values of the cost matrix
+    sim_approx_scaled:  Sparse values of the Nyström approximation,
+                        using the indices of cost_exact
+    sign_approx:        Sign of the sparse values of the Nyström approximation
+    corr_batch_idx:     Batch indices of the sparse correction values
+                        (cost_exact, sim_approx_scaled)
+    corr_idx1:          Left (row) indices of the sparse correction values,
+                        with batch-wise offsets for treating all values at once
+    corr_idx2:          Right (col) indices of the sparse correction values
+                        with batch-wise offsets
+    corr_idx1_nooffset: Left (row) indices of the sparse correction values,
+                        without batch-wise offsets
+    corr_idx2_nooffset: Right (col) indices of the sparse correction values
+                        without batch-wise offsets
+    norms1_batch_idx:   Batch indices of the left norm vectors, i.e. one per row
+    norms1_idx:         Point indices of the left norm vectors, i.e. one per row
+    norms2_batch_idx:   Batch indices of the right norm vectors, i.e. one per col
+    norms2_idx:         Point indices of the right norm vectors, i.e. one per col
+    norms1:             Concatenated norms of the left embeddings
+    norms2:             Concatenated norms of the right embeddings
+    num_points:         Number of points per side and sample, shape [2, batch_size]
+    sinkhorn_reg:       Sinkhorn regularization
+    niter:              Number of Sinkhorn iterations
+
+    Returns
+    -------
+    C:                  Transport cost per sample
     """
 
     # For some reason scripting this is broken in PyTorch>=1.8

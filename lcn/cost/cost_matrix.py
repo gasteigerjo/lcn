@@ -569,6 +569,37 @@ def get_cost_matrix(
     bp_cost_matrix=True,
     full_bp_matrix=False,
 ):
+    """
+    Calculate a cost matrix according to the passed settings.
+
+    Arguments
+    ---------
+    embeddings:     Padded list of 2 sets of embeddings to calculate
+                    the cost matrix from, shape:
+                    [[batch_size, max_points, embedding_size]]
+    num_points:     Number of points per side and sample, shape [2, batch_size]
+    nystrom:        Dictionary with arguments for the Nyström approximation.
+                    Possible keys: landmark_method, num_clusters
+    sparse:         Dictionary with arguments for the sparse approximation.
+                    Possible keys: method, neighbor_method, num_clusters,
+                                   multiscale_threshold, num_hash_bands,
+                                   num_hashes_per_band
+    sinkhorn_reg:   Sinkhorn regularization
+    sinkhorn_niter: Number of Sinkhorn iterations used for multiscale Sinkhorn
+    alpha:          Vector of weights for scaling the embeddings before calculating
+                    the norms used in the BP matrix
+    dist:           Distance function used for calculating the cost matrix
+    dist_cluster:   Distance function used for clustering/choosing landmarks.
+                    Uses `dist` if nothing is passed.
+    bp_cost_matrix: Calculate a BP matrix instead of the regular cost matrix.
+    full_bp_matrix: Calculate the full BP matrix instead of just the regular
+                    cost matrix and the embedding norms.
+
+    Returns
+    -------
+    cost_matrix:    Dictionary-like Munch that contains all information
+                    of the (approximate) cost matrix
+    """
     batch_size, max_points, emb_size = embeddings[0].shape
 
     if not dist_cluster:

@@ -79,8 +79,12 @@ def run(
     sinkhorn_reg                Entropy regularization used for Sinkhorn
     method                      Name of the Sinkhorn approximation method
                                 (full, original, nystrom, multiscale, sparse, lcn)
-    nystrom                     Dictionary containing Nyström approximation settings
-    sparse                      Dictionary containing sparse approximation settings
+    nystrom:                    Dictionary containing Nyström approximation settings.
+                                Possible keys: landmark_method, num_clusters
+    sparse:                     Dictionary containing sparse approximation settings.
+                                Possible keys: method, neighbor_method, num_clusters,
+                                               multiscale_threshold, num_hash_bands,
+                                               num_hashes_per_band
     test                        Whether to evaluate on the test set
     data_dir                    Directory containing the data set
     output_src                  Whether and where to save the

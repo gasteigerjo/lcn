@@ -14,7 +14,8 @@ def get_transport_plan(cost_matrix, niter, method="full"):
     Arguments
     ---------
     cost_matrix: munch.Munch
-        Dictionary-like object containing the cost matrix, indices, and related information
+        Dictionary-like object containing the cost matrix,
+        indices, and related information
     niter: int
         Number of Sinkhorn iterations
     method: str
@@ -22,8 +23,10 @@ def get_transport_plan(cost_matrix, niter, method="full"):
 
     Returns
     -------
-    A function that efficiently computes the matrix-vector product for a given set of embeddings.
-    CAREFUL: The input/output vectors for the resulting function need to be properly masked for the batched (padded) version.
+    A function that efficiently computes the matrix-vector product
+    for a given set of embeddings.
+    CAREFUL: The input/output vectors for the resulting function
+    need to be properly masked for the batched (padded) version.
     """
     batched = cost_matrix.num_points.shape[1] > 1
 
