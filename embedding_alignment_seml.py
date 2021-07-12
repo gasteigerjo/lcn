@@ -160,6 +160,11 @@ def run(
     runtime = time.time() - t0
     logging.info(f"Done [{runtime:.1f} sec]")
 
+    if test:
+        logging.info("Evaluation on test set")
+    else:
+        logging.info("Evaluation on validation set")
+
     x_tgt_rot = x_tgt @ R.T
 
     acc_nn = compute_accuracy(x_src, x_tgt_rot, src2tgt, compute_nn)

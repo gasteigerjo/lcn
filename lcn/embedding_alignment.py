@@ -1,3 +1,5 @@
+# Partially based on https://github.com/facebookresearch/fastText/blob/master/alignment/unsup_align.py
+
 import logging
 
 from tqdm.autonotebook import tqdm
