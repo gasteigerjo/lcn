@@ -9,11 +9,11 @@ Published at ICML 2021.
 The paper furthermore proposed the graph transport network (GTN), whose implementation you can find in [this accompanying repository](https://github.com/klicperajo/gtn).
 
 In addition to LCN and sparse Sinkhorn, this repository furthermore contains useful implementations of various other variants of Sinkhorn:
-- regular Sinkhorn
+- full Sinkhorn
 - unbalanced Sinkhorn
 - learnable unbalanced Sinkhorn via BP-matrix
 - Nyström-Sinkhorn (regular and BP version)
-- multiscale Sinkhorn (regular and BP version)
+- Multiscale Sinkhorn (regular and BP version)
 - sparse Sinkhorn (regular and BP version)
 - LCN-Sinkhorn (regular and BP version)
 
