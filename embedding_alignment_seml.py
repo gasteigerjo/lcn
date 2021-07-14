@@ -53,7 +53,7 @@ def run(
     seed=1111,
     ninit=2500,
     sinkhorn_reg=0.05,
-    method="full",
+    original=False,
     nystrom=None,
     sparse=None,
     test=False,
@@ -78,11 +78,10 @@ def run(
     seed                        Random seed
     ninit                       Number of embeddings used for convex initialization
     sinkhorn_reg                Entropy regularization used for Sinkhorn
-    method                      Name of the Sinkhorn approximation method
-                                (full, original, nystrom, multiscale, sparse, lcn)
-    nystrom:                    Dictionary containing Nyström approximation settings.
+    original                    Whether to use the original training method
+    nystrom                     Dictionary containing Nyström approximation settings.
                                 Possible keys: landmark_method, num_clusters
-    sparse:                     Dictionary containing sparse approximation settings.
+    sparse                      Dictionary containing sparse approximation settings.
                                 Possible keys: method, neighbor_method, num_clusters,
                                                multiscale_threshold, num_hash_bands,
                                                num_hashes_per_band
@@ -158,7 +157,6 @@ def run(
             x_tgt,
             R0.clone(),
             sinkhorn_reg=sinkhorn_reg,
-            method=method,
             nystrom=nystrom,
             sparse=sparse,
             lr=lr,

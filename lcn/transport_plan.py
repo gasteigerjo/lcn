@@ -7,7 +7,7 @@ from lcn.sparse_sinkhorn import arg_log_sparse_sinkhorn
 from lcn.utils import call_with_filtered_args, repeat_blocks, scatter
 
 
-def get_transport_plan(cost_matrix, niter, method="full"):
+def get_transport_plan(cost_matrix, niter):
     """
     Compute transport plan using the provided cost matrix.
 
@@ -18,8 +18,6 @@ def get_transport_plan(cost_matrix, niter, method="full"):
         indices, and related information
     niter: int
         Number of Sinkhorn iterations
-    method: str
-        Which Sinkhorn method to use: full, nystrom, sparse, lcn
 
     Returns
     -------
@@ -30,7 +28,7 @@ def get_transport_plan(cost_matrix, niter, method="full"):
     """
     batched = cost_matrix.num_points.shape[1] > 1
 
-    if method == "full":
+    if cost_matrix.representation == "full":
         T_log, _, _ = call_with_filtered_args(
             arg_log_sinkhorn2, **cost_matrix, niter=niter
         )
@@ -47,7 +45,7 @@ def get_transport_plan(cost_matrix, niter, method="full"):
             def mv_prod(v):
                 return T @ v
 
-    elif method == "nystrom":
+    elif cost_matrix.representation == "nystrom":
         T1a_log, Ta2_log, _, _ = call_with_filtered_args(
             arg_log_nystrom_sinkhorn, **cost_matrix, niter=niter
         )
@@ -64,7 +62,7 @@ def get_transport_plan(cost_matrix, niter, method="full"):
             def mv_prod(v):
                 return T1a @ (Ta2 @ v)
 
-    elif method == "sparse":
+    elif cost_matrix.representation == "sparse":
         T_log, _, _ = call_with_filtered_args(
             arg_log_sparse_sinkhorn, **cost_matrix, niter=niter
         )
@@ -79,7 +77,7 @@ def get_transport_plan(cost_matrix, niter, method="full"):
                 reduce="sum",
             )
 
-    elif method == "lcn":
+    elif cost_matrix.representation == "lcn":
         T1a_log, Ta2_log, T_exact_log, T_approx_log, _, _ = call_with_filtered_args(
             arg_log_lcn_sinkhorn, **cost_matrix, niter=niter
         )

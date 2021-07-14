@@ -17,7 +17,7 @@ def get_matrix_stack_idx(num_points):
     return torch.stack((idx1, idx2))
 
 
-def calc_cost_matrix(embeddings, num_points, dist):
+def calc_cost_matrix_full(embeddings, num_points, dist):
     _, max_points, _ = embeddings[0].shape
 
     # Real size: b x n1 x n2
@@ -41,7 +41,11 @@ def calc_cost_matrix(embeddings, num_points, dist):
     # Set all non-distances to inf
     cost_matrix = cost_matrix.masked_fill(mask_nodist, math.inf)
 
-    return Munch(cost_mat=cost_matrix, num_points=num_points)
+    return Munch(
+        cost_mat=cost_matrix,
+        num_points=num_points,
+        representation="full",
+    )
 
 
 def calc_bp_cost_matrix(embeddings, num_points, dist, alpha):
@@ -76,7 +80,11 @@ def calc_bp_cost_matrix(embeddings, num_points, dist, alpha):
     norms2 = norms2.masked_fill(mask_norms_n2, 1e20)
 
     return Munch(
-        cost_mat=cost_matrix, norms1=norms1, norms2=norms2, num_points=num_points
+        cost_mat=cost_matrix,
+        norms1=norms1,
+        norms2=norms2,
+        num_points=num_points,
+        representation="bp_decomposed",
     )
 
 
@@ -138,7 +146,11 @@ def calc_bp_cost_matrix_full(embeddings, num_points, dist, alpha):
         math.inf,
     )
 
-    return Munch(cost_mat=cost_matrix, num_points=num_points)
+    return Munch(
+        cost_mat=cost_matrix,
+        num_points=num_points_sum,
+        representation="bp_full",
+    )
 
 
 @torch.no_grad()
@@ -441,6 +453,7 @@ def calc_cost_matrix_sparse(
         norms2=norms2,
         num_points=num_points,
         sinkhorn_reg=sinkhorn_reg,
+        representation="sparse",
     )
 
 
@@ -518,6 +531,7 @@ def calc_cost_matrix_nystrom(
         norms2=norms2,
         num_points=num_points,
         sinkhorn_reg=sinkhorn_reg,
+        representation="nystrom",
     )
 
 
@@ -552,6 +566,7 @@ def merge_cost_matrices(cost_mat_nystrom, cost_mat_sparse):
         norms1_idx=cost_mat_sparse.norms1_idx,
         norms2_batch_idx=cost_mat_sparse.norms2_batch_idx,
         norms2_idx=cost_mat_sparse.norms2_idx,
+        representation="lcn",
     )
     return cost_mat
 
@@ -711,6 +726,6 @@ def get_cost_matrix(
         cost_matrix.sinkhorn_reg = sinkhorn_reg
         return cost_matrix
     else:
-        cost_matrix = calc_cost_matrix(embeddings, num_points, dist)
+        cost_matrix = calc_cost_matrix_full(embeddings, num_points, dist)
         cost_matrix.sinkhorn_reg = sinkhorn_reg
         return cost_matrix

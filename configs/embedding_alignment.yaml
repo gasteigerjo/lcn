@@ -52,24 +52,21 @@ from_en:
 
   original:
     fixed:
-      method: original
+      original: False
       nystrom: None
       sparse: None
   full:
     fixed:
-      method: full
       nystrom: None
       sparse: None
   nystrom:
     fixed:
-      method: nystrom
       nystrom:
         neighbor_method: sampling_kmeanspp
         num_clusters: 200
       sparse: None
   multiscale:
     fixed:
-      method: sparse
       nystrom: None
       sparse:
         method: multiscale
@@ -80,7 +77,6 @@ from_en:
         multiscale_threshold: 0.05
   sparse:
     fixed:
-      method: sparse
       nystrom: None
       sparse:
         method: lsh
@@ -90,7 +86,6 @@ from_en:
         num_hashes_per_band: 2
   lcn:
     fixed:
-      method: lcn
       nystrom:
         landmark_method: sampling_kmeanspp
         num_clusters: 20
@@ -115,24 +110,21 @@ to_en:
 
   original:
     fixed:
-      method: original
+      original: True
       nystrom: None
       sparse: None
   full:
     fixed:
-      method: full
       nystrom: None
       sparse: None
   nystrom:
     fixed:
-      method: nystrom
       nystrom:
         landmark_method: sampling_kmeanspp
         num_clusters: 200
       sparse: None
   multiscale:
     fixed:
-      method: sparse
       nystrom: None
       sparse:
         method: multiscale
@@ -143,7 +135,6 @@ to_en:
         multiscale_threshold: 0.05
   sparse:
     fixed:
-      method: sparse
       nystrom: None
       sparse:
         method: lsh
@@ -153,7 +144,6 @@ to_en:
         num_hashes_per_band: 2
   lcn:
     fixed:
-      method: lcn
       nystrom:
         landmark_method: sampling_kmeanspp
         num_clusters: 20

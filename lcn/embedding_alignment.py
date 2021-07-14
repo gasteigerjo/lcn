@@ -53,7 +53,6 @@ def align(
     Y,
     R,
     sinkhorn_reg,
-    method,
     nystrom,
     sparse,
     lr=10.0,
@@ -81,7 +80,7 @@ def align(
             dist_cluster=distances.Cosine(),
             bp_cost_matrix=False,
         )
-        mv_prod = get_transport_plan(cost_matrix, niter=10, method=method)
+        mv_prod = get_transport_plan(cost_matrix, niter=10)
         # compute gradient
         del cost_matrix
         G = -xt.T @ mv_prod(yt)
