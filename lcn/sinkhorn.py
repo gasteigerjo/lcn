@@ -191,34 +191,18 @@ def arg_log_sinkhorn(
     batch_size, max_points, _ = cost_mat.shape
 
     # Fill padding with inf
-    if num_points.dim() == 1:
-        # Quadratic cost matrix
-        mask_outer1 = (
-            torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
-                :, None
-            ].expand_as(cost_mat)
-            >= num_points[:, None, None]
-        )
-        mask_outer2 = (
-            torch.arange(
-                max_points, dtype=torch.int64, device=cost_mat.device
-            ).expand_as(cost_mat)
-            >= num_points[:, None, None]
-        )
-    else:
-        # Non-quadratic cost matrix
-        mask_outer1 = (
-            torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
-                :, None
-            ].expand_as(cost_mat)
-            >= num_points[0, :, None, None]
-        )
-        mask_outer2 = (
-            torch.arange(
-                max_points, dtype=torch.int64, device=cost_mat.device
-            ).expand_as(cost_mat)
-            >= num_points[1, :, None, None]
-        )
+    mask_outer1 = (
+        torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
+            :, None
+        ].expand_as(cost_mat)
+        >= num_points[0, :, None, None]
+    )
+    mask_outer2 = (
+        torch.arange(
+            max_points, dtype=torch.int64, device=cost_mat.device
+        ).expand_as(cost_mat)
+        >= num_points[1, :, None, None]
+    )
     mask_outer = mask_outer1 | mask_outer2
     cost_inf = cost_mat.masked_fill(mask_outer, math.inf) / sinkhorn_reg[:, None, None]
 
@@ -268,34 +252,18 @@ def arg_log_sinkhorn2(
     batch_size, max_points, _ = cost_mat.shape
 
     # Fill padding with inf
-    if num_points.dim() == 1:
-        # Quadratic cost matrix
-        mask_outer1 = (
-            torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
-                :, None
-            ].expand_as(cost_mat)
-            >= num_points[:, None, None]
-        )
-        mask_outer2 = (
-            torch.arange(
-                max_points, dtype=torch.int64, device=cost_mat.device
-            ).expand_as(cost_mat)
-            >= num_points[:, None, None]
-        )
-    else:
-        # Non-quadratic cost matrix
-        mask_outer1 = (
-            torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
-                :, None
-            ].expand_as(cost_mat)
-            >= num_points[0, :, None, None]
-        )
-        mask_outer2 = (
-            torch.arange(
-                max_points, dtype=torch.int64, device=cost_mat.device
-            ).expand_as(cost_mat)
-            >= num_points[1, :, None, None]
-        )
+    mask_outer1 = (
+        torch.arange(max_points, dtype=torch.int64, device=cost_mat.device)[
+            :, None
+        ].expand_as(cost_mat)
+        >= num_points[0, :, None, None]
+    )
+    mask_outer2 = (
+        torch.arange(
+            max_points, dtype=torch.int64, device=cost_mat.device
+        ).expand_as(cost_mat)
+        >= num_points[1, :, None, None]
+    )
     mask_outer = mask_outer1 | mask_outer2
     cost_inf = cost_mat.masked_fill(mask_outer, math.inf)
 

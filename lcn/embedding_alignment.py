@@ -23,7 +23,7 @@ def convex_init(X, Y, sinkhorn_reg, niter=100, apply_sqrt=False, disable_tqdm=Fa
     K_Y *= K_X.norm() / K_Y.norm()
     K2_X, K2_Y = K_X @ K_X, K_Y @ K_Y
     P = X.new_full([n, n], fill_value=1 / n)
-    num_points = torch.tensor(P.shape[-1:], device=X.device)
+    num_points = torch.tensor([P.shape[-1:], P.shape[-1:]], device=X.device)
     for it in tqdm(range(niter), disable=disable_tqdm):
         G = P @ K2_X + K2_Y @ P - 2 * K_Y @ (P @ K_X)
         q_log, _, _ = arg_log_sinkhorn2(
@@ -40,7 +40,7 @@ def convex_init(X, Y, sinkhorn_reg, niter=100, apply_sqrt=False, disable_tqdm=Fa
 def objective(X, Y, R, sinkhorn_reg, n=5000):
     Xn, Yn = X[:n], Y[:n]
     C = -(Xn @ R) @ Yn.T
-    num_points = torch.tensor(C.shape[-1:], device=R.device)
+    num_points = torch.tensor([C.shape[-1:], C.shape[-1:]], device=R.device)
     P_log, _, _ = arg_log_sinkhorn2(
         C.unsqueeze(0), num_points, sinkhorn_reg.unsqueeze(0), niter=10
     )
@@ -109,7 +109,7 @@ def align_original(
     disable_tqdm=False,
 ):
     for epoch in tqdm(range(1, nepoch + 1), disable=disable_tqdm):
-        num_points = torch.tensor([bsz], device=R.device)
+        num_points = torch.tensor([[bsz], [bsz]], device=R.device)
         for _ in tqdm(range(1, niter + 1), disable=disable_tqdm):
             # sample mini-batch
             xt = X[torch.randperm(nmax, device=R.device)[:bsz], :]

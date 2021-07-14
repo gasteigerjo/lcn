@@ -148,7 +148,7 @@ def calc_bp_cost_matrix_full(embeddings, num_points, dist, alpha):
 
     return Munch(
         cost_mat=cost_matrix,
-        num_points=num_points_sum,
+        num_points=num_points_sum.expand(2, -1),
         representation="bp_full",
     )
 
@@ -220,7 +220,7 @@ def get_pair_indices_matched_clusters(
         dist_lm = dist.cdist(landmarks[0], landmarks[1])
 
         # Match landmarks
-        dist_lm_len = dist_lm.new_tensor([num_clusters])
+        dist_lm_len = dist_lm.new_tensor([[num_clusters], [num_clusters]])
         T_log_lm, _, _ = arg_log_sinkhorn2(
             dist_lm, dist_lm_len, sinkhorn_reg, sinkhorn_niter
         )
