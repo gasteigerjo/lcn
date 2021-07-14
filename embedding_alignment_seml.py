@@ -61,6 +61,7 @@ def run(
     output_src=None,
     output_tgt=None,
     device="cuda",
+    hide_progressbar=False,
 ):
     """
     Main function for aligning word embeddings.
@@ -92,6 +93,7 @@ def run(
     output_tgt                  Whether and where to save the
                                 final (rotated) target language embeddings
     device                      Device used by PyTorch (cpu, cuda)
+    hide_progressbar            Whether to hide the progress bars shown during training
     """
     model_src = f"{data_dir}/wiki.{language_src}.vec"
     model_tgt = f"{data_dir}/wiki.{language_tgt}.vec"
@@ -134,7 +136,7 @@ def run(
         x_tgt[:ninit],
         sinkhorn_reg=sinkhorn_reg,
         apply_sqrt=True,
-        disable_tqdm=True
+        disable_tqdm=hide_progressbar,
     )
     torch.cuda.synchronize()
     logging.info(f"Done [{time.time() - t0:.1f} sec]")
@@ -142,8 +144,14 @@ def run(
     logging.info("Computing mapping with Wasserstein Procrustes...")
     torch.cuda.synchronize()
     t0 = time.time()
-    if method == "original":
-        R = align_original(x_src, x_tgt, R0.clone(), sinkhorn_reg, disable_tqdm=True)
+    if original:
+        R = align_original(
+            x_src,
+            x_tgt,
+            R0.clone(),
+            sinkhorn_reg,
+            disable_tqdm=hide_progressbar,
+        )
     else:
         R = align(
             x_src,
@@ -158,7 +166,7 @@ def run(
             lr_half_niter=lr_half_niter,
             ntrain=ntrain,
             print_niter=print_niter,
-            disable_tqdm=True,
+            disable_tqdm=hide_progressbar,
         )
     torch.cuda.synchronize()
     runtime = time.time() - t0
@@ -177,7 +185,7 @@ def run(
     acc_csls = compute_accuracy(x_src, x_tgt_rot, src2tgt, compute_csls)
     logging.info(f"CSLS precision@1: {100 * acc_csls:.2f}%")
 
-    x_tgt_rot = refine(x_src, x_tgt_rot, src2tgt, disable_tqdm=True)
+    x_tgt_rot = refine(x_src, x_tgt_rot, src2tgt, disable_tqdm=hide_progressbar)
 
     acc_refined = compute_accuracy(x_src, x_tgt_rot, src2tgt, compute_csls)
     logging.info(f"Refined CSLS precision@1: {100 * acc_refined:.2f}%")
