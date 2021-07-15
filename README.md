@@ -24,7 +24,7 @@ The repository furthermore contains multiple methods for finding landmarks (as u
 - k-means
 - hierarchical k-means
 - k-means++ and uniform sampling
-- angular LSH
+- angular (cross-polytope) LSH
 
 ## Installation
 You can install the repository using `pip install -e .`.
