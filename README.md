@@ -17,8 +17,7 @@ In addition to LCN and sparse Sinkhorn, this repository furthermore contains use
 - sparse Sinkhorn (regular and BP version)
 - LCN-Sinkhorn (regular and BP version)
 
-All implementations are batched and executable on CPU or GPU via PyTorch. Most algorithms can calculate the distance or the full transport plan (denoted with an `arg_` prefix).
-Backpropagation of Sinkhorn distances are accelerated using analytical gradients. The Nyström kernel approximation can be combined with any sparse approximation to obtain an LCN approximation.
+All implementations are batched and executable on CPU or GPU via PyTorch. Most algorithms can calculate the distance or the full transport plan (denoted with an `arg_` prefix). Implementations are currently limited to uniform marginals. Backpropagation of Sinkhorn distances are accelerated using analytical gradients. The Nyström kernel approximation can be combined with any sparse approximation to obtain an LCN approximation.
 
 The repository furthermore contains multiple methods for finding landmarks (as used in Nyström) and clusters (for sparse and multiscale Sinkhorn):
 - k-means
