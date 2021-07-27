@@ -235,7 +235,8 @@ def repeat_blocks(sizes, repeats, continuous_indexing=True):
 
     if insert_dummy:
         id_ar = id_ar[1:]
-        id_ar[0] -= 1
+        if continuous_indexing:
+            id_ar[0] -= 1
 
     # Finally index into input array for the group repeated o/p
     res = id_ar.cumsum(0)
