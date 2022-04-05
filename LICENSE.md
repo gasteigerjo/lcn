@@ -1,4 +1,4 @@
-PPRGo Copyright 2021 Johannes Klicpera (“Licensor”)
+PPRGo Copyright 2021 Johannes Gasteiger (“Licensor”)
 
 Hippocratic License Version Number: 2.1.
 

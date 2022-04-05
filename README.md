@@ -3,10 +3,12 @@
 Reference implementation of the locally corrected Nyström kernel approximation, sparse Sinkhorn and LCN-Sinkhorn. These fast methods for optimal transport have been proposed in our paper 
 
 **[Scalable Optimal Transport in High Dimensions for Graph Distances, Embedding Alignment, and More](https://www.daml.in.tum.de/lcn)**   
-by Johannes Klicpera, Marten Lienen, Stephan Günnemann  
+by Johannes Gasteiger, Marten Lienen, Stephan Günnemann  
 Published at ICML 2021.
 
-The paper furthermore proposed the graph transport network (GTN), whose implementation you can find in [this accompanying repository](https://github.com/klicperajo/gtn).
+Note that the author's name has changed from Johannes Klicpera to Johannes Gasteiger.
+
+The paper furthermore proposed the graph transport network (GTN), whose implementation you can find in [this accompanying repository](https://github.com/gasteigerjo/gtn).
 
 In addition to LCN and sparse Sinkhorn, this repository furthermore contains useful implementations of various other variants of Sinkhorn:
 - full Sinkhorn
@@ -61,15 +63,15 @@ This repository contains a notebook for running word embedding alignment (`embed
 The config file specifies all hyperparameters and allows reproducing the results in the paper.
 
 ## Contact
-Please contact klicpera@in.tum.de if you have any questions.
+Please contact j.gasteiger@in.tum.de if you have any questions.
 
 ## Cite
 Please cite our paper if you use our method or code in your own work:
 
 ```
-@inproceedings{klicpera_2021_lcn,
+@inproceedings{gasteiger_2021_lcn,
   title={Scalable Optimal Transport in High Dimensions for Graph Distances, Embedding Alignment, and More},
-  author={Klicpera, Johannes and Lienen, Marten and G{\"u}nnemann, Stephan},
+  author={Gasteiger, Johannes and Lienen, Marten and G{\"u}nnemann, Stephan},
   booktitle = {Thirty-eighth International Conference on Machine Learning (ICML)},
   year={2021},
 }
