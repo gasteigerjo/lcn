@@ -2,7 +2,7 @@
 
 Reference implementation of the locally corrected Nyström kernel approximation, sparse Sinkhorn and LCN-Sinkhorn. These fast methods for optimal transport have been proposed in our paper 
 
-**[Scalable Optimal Transport in High Dimensions for Graph Distances, Embedding Alignment, and More](https://www.daml.in.tum.de/lcn)**   
+**[Scalable Optimal Transport in High Dimensions for Graph Distances, Embedding Alignment, and More](https://www.cs.cit.tum.de/daml/lcn/)**   
 by Johannes Gasteiger, Marten Lienen, Stephan Günnemann  
 Published at ICML 2021.
 
